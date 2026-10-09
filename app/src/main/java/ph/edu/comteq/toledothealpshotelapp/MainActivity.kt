@@ -6,7 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,10 +55,24 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
+                    var selectedHotel by remember { mutableStateOf<Hotel?>(null) }
 
-                    Homepage(
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    Box(modifier = Modifier.padding(innerPadding)) {
+                        if (selectedHotel == null) {
+                            Homepage(
+                                onHotelClick = { hotel ->
+                                    selectedHotel = hotel
+                                }
+                            )
+                        } else {
+                            BookingDetailScreen(
+                                hotel = selectedHotel!!,
+                                onBackClick = {
+                                    selectedHotel = null
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -65,7 +81,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Homepage(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onHotelClick: (Hotel) -> Unit = {}
 ) {
 
     val context = LocalContext.current
@@ -215,7 +232,8 @@ fun Homepage(
             items(filteredHotels) { hotel ->
 
                 HotelItem(
-                    hotel = hotel
+                    hotel = hotel,
+                    onClick = { onHotelClick(hotel) }
                 )
             }
         }
@@ -224,7 +242,8 @@ fun Homepage(
 
 @Composable
 fun HotelItem(
-    hotel: Hotel
+    hotel: Hotel,
+    onClick: () -> Unit = {}
 ) {
 
     val context = LocalContext.current
@@ -251,7 +270,9 @@ fun HotelItem(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
 
         shape = RoundedCornerShape(
             12.dp
@@ -334,5 +355,47 @@ fun GreetingPreview() {
     ToledoTheAlpsHotelAppTheme {
 
         Homepage()
+    }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    name = "Booking Details Guest Reviews"
+)
+@Composable
+fun BookingDetailsGuestReviewsPreview() {
+    ToledoTheAlpsHotelAppTheme {
+        BookingDetailScreen(
+            hotel = Hotel(
+                hotel_id = 1000,
+                hotel_name = "Résidence Pierre & Vacances Premium les Crets",
+                hotel_rating = 8.3,
+                hotel_to_ski_distance = 6.7,
+                hotel_cover_image = "cover/1000.jpg"
+            ),
+            initialTab = 0
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    name = "Booking Details Room Selection"
+)
+@Composable
+fun BookingDetailsRoomSelectionPreview() {
+    ToledoTheAlpsHotelAppTheme {
+        BookingDetailScreen(
+            hotel = Hotel(
+                hotel_id = 1000,
+                hotel_name = "Résidence Pierre & Vacances Premium les Crets",
+                hotel_rating = 8.3,
+                hotel_to_ski_distance = 6.7,
+                hotel_cover_image = "cover/1000.jpg"
+            ),
+            initialTab = 1
+        )
     }
 }
